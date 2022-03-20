@@ -1270,6 +1270,8 @@ QHash<QString, QString> PulseSupport::streamProperties(QString streamUuid) const
         it.next();
         unsetenv(QString("PULSE_PROP_OVERRIDE_%1").arg(it.key()).toUtf8());
     }
+#else
+    Q_UNUSED(streamUuid);
 #endif // HAVE_PULSEAUDIO
 
     return properties;
