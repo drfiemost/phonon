@@ -124,6 +124,7 @@ void SeekSliderPrivate::_k_seekableChanged(bool isSeekable)
                 // set the tickInterval to some common value
                 media->setTickInterval(350);
             }
+            // fall through
         case Phonon::BufferingState:
         case Phonon::PausedState:
             setEnabled(true);
@@ -166,6 +167,7 @@ void SeekSliderPrivate::_k_stateChanged(State newstate)
             // set the tickInterval to some common value
             media->setTickInterval(350);
         }
+        // fall through
     case Phonon::BufferingState:
     case Phonon::PausedState:
         setEnabled(true);
