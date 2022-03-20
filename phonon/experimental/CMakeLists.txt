@@ -26,7 +26,6 @@ set_target_properties(${PHONON_LIB_SONAME}experimental PROPERTIES
                                          VERSION ${PHONON_LIB_VERSION}
                                          SOVERSION ${PHONON_LIB_SOVERSION}
                                          DEFINE_SYMBOL MAKE_PHONONEXPERIMENTAL_LIB
-                                         LINK_INTERFACE_LIBRARIES ""
                                          )
 install(TARGETS ${PHONON_LIB_SONAME}experimental EXPORT PhononExperimentalLibs ${INSTALL_TARGETS_DEFAULT_ARGS})
 target_include_directories(${PHONON_LIB_SONAME}experimental

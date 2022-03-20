@@ -168,13 +168,7 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
 set_target_properties(${PHONON_LIB_SONAME} PROPERTIES
                                            VERSION ${PHONON_LIB_VERSION}
                                            SOVERSION ${PHONON_LIB_SOVERSION}
-                                           DEFINE_SYMBOL MAKE_PHONON_LIB
-                                           LINK_INTERFACE_LIBRARIES "")
-# LINK_INTERFACE_LIBRARIES: By default don't add any linked libraries to the "exported"
-# link interfaces, so that executables linking against this library
-# will not automatically add implicit dependencies to their link list.
-# This reduces inter-package dependencies and makes it easier to remove
-# dependencies of shared libraries without breaking binary compatibility.
+                                           DEFINE_SYMBOL MAKE_PHONON_LIB)
 
 target_include_directories(${PHONON_LIB_SONAME}
     INTERFACE "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>")
