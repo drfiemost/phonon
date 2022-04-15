@@ -1,6 +1,11 @@
 project(Phonon)
 
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
+
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 add_definitions(-DPHONON_BUILD_WITH_CMAKE)
 
 option(PHONON_ASSERT_STATES "Enable code to assert backend state transitions" ON)
