@@ -261,13 +261,8 @@ bool FactoryPrivate::createBackend()
         // (finding the first loadable backend).
         const QStringList paths = QCoreApplication::libraryPaths();
         for (int i = 0; i < paths.count(); ++i) {
-#ifdef __GNUC__
-#warning this actually breaks with qmake....
-#endif
 #ifndef PHONON_BACKEND_DIR_SUFFIX
-#ifdef __GNUC__
-#error PHONON_BACKEND_DIR_SUFFIX must be defined.
-#endif
+static_assert(false, "PHONON_BACKEND_DIR_SUFFIX must be defined.");
 #endif
             const QString libPath = paths.at(i) + PHONON_BACKEND_DIR_SUFFIX;
             const QDir dir(libPath);
