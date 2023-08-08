@@ -123,8 +123,9 @@ void EffectWidgetPrivate::autogenerateUi()
                     cb->setCurrentIndex(value.toInt());
                     QObject::connect(cb, SIGNAL(currentIndexChanged(int)), q, SLOT(_k_setIntParameter(int)));
                 } else {
-                    for (int i = 0; i < para.possibleValues().count(); ++i) {
-                        const QVariant &item = para.possibleValues().at(i);
+                    auto possibleValues = para.possibleValues();
+                    for (int i = 0; i < possibleValues.count(); ++i) {
+                        const QVariant &item = possibleValues.at(i);
                         cb->addItem(item.toString());
                         if (item == value) {
                             cb->setCurrentIndex(cb->count() - 1);
