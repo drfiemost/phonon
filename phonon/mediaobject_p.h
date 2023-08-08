@@ -25,10 +25,6 @@
 
 #include <QtCore/QString>
 #include <QtCore/QQueue>
-#ifdef HAVE_QZEITGEIST
-#include <QZeitgeist/Log>
-#include <QZeitgeist/QZeitgeist>
-#endif
 
 #include "medianode_p.h"
 #include "medianodedestructionhandler_p.h"
@@ -114,18 +110,10 @@ class MediaObjectPrivate : public MediaNodePrivate, private MediaNodeDestruction
             validateStates(!(qgetenv("PHONON_ASSERT_STATES").isEmpty())),
             validator(0)
 #endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
-        {
-#ifdef HAVE_QZEITGEIST
-            log = new QZeitgeist::Log();
-#endif
-        }
+        {}
 
         ~MediaObjectPrivate()
-        {
-#ifdef HAVE_QZEITGEIST
-            delete log;
-#endif
-        }
+        {}
 
         qint64 currentTime;
         qint32 tickInterval;
@@ -150,9 +138,6 @@ class MediaObjectPrivate : public MediaNodePrivate, private MediaNodeDestruction
 #endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
         MediaSource mediaSource;
         QQueue<MediaSource> sourceQueue;
-#ifdef HAVE_QZEITGEIST
-        QZeitgeist::Log *log;
-#endif
         bool validateStates;
         StatesValidator *validator;
 };
