@@ -32,9 +32,12 @@ macro_optional_find_package(PulseAudio ${PULSEAUDIO_FIND_VERSION} QUIET NO_MODUL
 if (NOT PULSEAUDIO_FOUND)
 
 if (NOT WIN32)
-   include(FindPkgConfig)
-   pkg_check_modules(PC_PULSEAUDIO QUIET libpulse>=${PULSEAUDIO_FIND_VERSION})
-   pkg_check_modules(PC_PULSEAUDIO_MAINLOOP QUIET libpulse-mainloop-glib)
+   find_package(PkgConfig QUIET)
+
+   if(PKG_CONFIG_FOUND)
+      pkg_check_modules(PC_PULSEAUDIO QUIET libpulse>=${PULSEAUDIO_FIND_VERSION})
+      pkg_check_modules(PC_PULSEAUDIO_MAINLOOP QUIET libpulse-mainloop-glib)
+   endif()
 endif (NOT WIN32)
 
 find_path(PULSEAUDIO_INCLUDE_DIR pulse/pulseaudio.h
