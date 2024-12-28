@@ -176,7 +176,7 @@ void EffectWidgetPrivate::autogenerateUi()
                     QObject::connect(slider, SIGNAL(valueChanged(int)), q, SLOT(_k_setSliderParameter(int)));
                 } else {
                     double step = 0.1;
-                    if (qAbs(maxValue - minValue) > 50)
+                    if (std::abs(maxValue - minValue) > 50)
                         step = 1.0;
                     QDoubleSpinBox *sb = new QDoubleSpinBox(q);
                     control = sb;

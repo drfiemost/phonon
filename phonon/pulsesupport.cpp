@@ -1291,7 +1291,7 @@ void PulseSupport::setupStreamEnvironment(QString streamUuid)
     while (it.hasNext()) {
         it.next();
         pDebug() << "PULSE_PROP_OVERRIDE_" <<  it.key() << " = " << it.value();
-        qputenv(QString("PULSE_PROP_OVERRIDE_%1").arg(it.key()).toUtf8(), it.value().toUtf8());
+        qputenv(QString("PULSE_PROP_OVERRIDE_%1").arg(it.key()).toUtf8().constData(), it.value().toUtf8());
     }
 }
 
