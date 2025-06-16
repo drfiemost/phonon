@@ -36,7 +36,6 @@
 
 #include <gst/gst.h>
 
-#include <phonon/pulsesupport.h>
 #include <phonon/GlobalDescriptionContainer>
 
 #include <QtCore/QCoreApplication>
@@ -63,11 +62,6 @@ Backend::Backend(QObject *parent, const QVariantList &)
         , m_effectManager(0)
         , m_isValid(false)
 {
-    // Initialise PulseAudio support
-    PulseSupport *pulse = PulseSupport::getInstance();
-    pulse->enable();
-    connect(pulse, SIGNAL(objectDescriptionChanged(ObjectDescriptionType)), SIGNAL(objectDescriptionChanged(ObjectDescriptionType)));
-
     // In order to support reloading, we only set the app name once...
     static bool first = true;
     if (first) {
@@ -135,7 +129,6 @@ Backend::~Backend()
     }
     delete m_effectManager;
     delete m_deviceManager;
-    PulseSupport::shutdown();
     gst_deinit();
 }
 

@@ -24,7 +24,6 @@
 #include "gsthelper.h"
 #include "phonon-config-gstreamer.h"
 #include <phonon/audiooutput.h>
-#include <phonon/pulsesupport.h>
 
 #include <QtCore/QStringBuilder>
 
@@ -228,9 +227,8 @@ bool AudioOutput::setOutputDevice(const QByteArray &driver, const QString &devic
 void AudioOutput::setStreamUuid(QString uuid)
 {
     m_streamUuid = uuid;
-#warning this really needs a check for pulsesink as well
     if (g_object_class_find_property(G_OBJECT_GET_CLASS(m_audioSink), "stream-properties")) {
-        const QHash<QString, QString> streamProperties = PulseSupport::getInstance()->streamProperties(uuid);
+        const QHash<QString, QString> streamProperties;
         GstStructure *properties = gst_structure_new_empty("props");
         QHashIterator<QString, QString> it(streamProperties);
         while (it.hasNext()) {

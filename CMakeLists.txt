@@ -283,4 +283,31 @@ if(PHONON_BUILD_DESCRIPTOR)
     install(FILES ${DESCRIPTOR_FILE_PATH} DESTINATION ${CMAKE_INSTALL_PREFIX})
 endif(PHONON_BUILD_DESCRIPTOR)
 
+# phonon gstreamer
+
+option(USE_INSTALL_PLUGIN "Use GStreamer codec installation API" TRUE)
+
+set(PHONON_GST_VERSION "${PHONON_GST_MAJOR_VERSION}.${PHONON_GST_MINOR_VERSION}.${PHONON_GST_PATCH_VERSION}")
+
+add_definitions(-DPHONON_GST_VERSION="${PHONON_GST_VERSION}")
+
+macro_log_feature(QT_QTOPENGL_FOUND "Qt4 OpenGL" "Qt4 OpenGL support is required to compile the gstreamer backend for Phonon" "" FALSE)
+
+find_package(GStreamer REQUIRED)
+find_package(GStreamerPlugins REQUIRED)
+macro_log_feature(GSTREAMER_FOUND "GStreamer" "gstreamer 1.0 is required for the multimedia backend" "http://gstreamer.freedesktop.org/modules/" TRUE "1.0")
+macro_log_feature(GSTREAMER_PLUGIN_VIDEO_FOUND "GStreamer video plugin" "The gstreamer video plugin (part of gstreamer-plugins-base 1.0) is required for the multimedia gstreamer backend" "http://gstreamer.freedesktop.org/modules/" TRUE "1.0")
+macro_log_feature(GSTREAMER_PLUGIN_AUDIO_FOUND "GStreamer audio plugin" "The gstreamer audio plugin (part of gstreamer-plugins-base 1.0) is required for the multimedia gstreamer backend" "http://gstreamer.freedesktop.org/modules/" TRUE "1.0")
+macro_log_feature(GSTREAMER_PLUGIN_PBUTILS_FOUND "GStreamer pbutils plugin" "The gstreamer pbutils plugin (part of gstreamer-plugins-base 1.0) is required for the multimedia gstreamer backend" "http://gstreamer.freedesktop.org/modules/" TRUE "1.0")
+
+find_package(GLIB2 REQUIRED)
+macro_log_feature(GLIB2_FOUND "GLib2" "GLib 2 is required to compile the gstreamer backend for Phonon" "http://www.gtk.org/download/" TRUE)
+
+find_package(GObject REQUIRED)
+
+find_package(LibXml2 REQUIRED)
+macro_log_feature(LIBXML2_FOUND "LibXml2" "LibXml2 is required to compile the gstreamer backend for Phonon" "http://xmlsoft.org/downloads.html" TRUE)
+
+add_subdirectory(gstreamer)
+
 macro_display_feature_log()

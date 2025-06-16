@@ -53,6 +53,7 @@ install( FILES
     phonon/VolumeSlider
 DESTINATION ${INCLUDE_INSTALL_DIR}/phonon COMPONENT Devel)
 
+# TODO remove
 set(COMPAT_HEADERS
     old/Phonon/AbstractAudioOutput
     old/Phonon/AbstractMediaStream

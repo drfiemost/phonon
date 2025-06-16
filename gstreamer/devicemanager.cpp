@@ -27,7 +27,6 @@
 #endif
 #include "widgetrenderer.h"
 #include "x11renderer.h"
-#include <phonon/pulsesupport.h>
 
 #include <gst/gst.h>
 
@@ -75,9 +74,6 @@ DeviceInfo::DeviceInfo(DeviceManager *manager, const QByteArray &deviceId,
     }
 
     if (caps & AudioOutput) {
-        // This should never be called when PulseAudio is active.
-        Q_ASSERT(!PulseSupport::getInstance()->isActive());
-
         // Get a preferred name from the device
         if (deviceId == "default") {
             m_name = "Default";
@@ -174,23 +170,9 @@ DeviceManager::DeviceManager(Backend *backend)
     QSettings settings(QLatin1String("Trolltech"));
     settings.beginGroup(QLatin1String("Qt"));
 
-    PulseSupport *pulse = PulseSupport::getInstance();
     m_audioSink = qgetenv("PHONON_GST_AUDIOSINK");
     if (m_audioSink.isEmpty())
         m_audioSink = settings.value(QLatin1String("audiosink"), "Auto").toByteArray().toLower();
-
-    if ("pulsesink" == m_audioSink && !pulse->isActive()) {
-        // If pulsesink is specifically requested, but not active, then
-        // fall back to auto.
-        m_audioSink = "auto";
-    } else if (m_audioSink == "auto" && pulse->isActive()) {
-        // We favour specific PA support if it's active and we're in 'auto' mode
-        // (although it may still be disabled if the pipeline cannot be made)
-        m_audioSink = "pulsesink";
-    } else if (m_audioSink != "pulsesink") {
-        // Otherwise, PA should not be used.
-        pulse->enable(false);
-    }
 
     m_videoSinkWidget = qgetenv("PHONON_GST_VIDEOMODE");
     if (m_videoSinkWidget.isEmpty()) {
@@ -323,14 +305,6 @@ GstElement *DeviceManager::createAudioSink(Category category)
             if (sink) {
                 gst_object_unref(sink);
                 sink = 0;
-            }
-            if ("pulsesink" == m_audioSink) {
-                // We've tried to use PulseAudio support, but the GST plugin
-                // doesn't exits. Let's try again, but not use PA support this time.
-                warning() << "PulseAudio support failed. Falling back to 'auto'";
-                PulseSupport::getInstance()->enable(false);
-                m_audioSink = "auto";
-                sink = createAudioSink();
             }
         }
     }
@@ -465,11 +439,8 @@ void DeviceManager::updateDeviceList()
      */
     GstElement *audioSink = createAudioSink();
     if (audioSink) {
-        if (!PulseSupport::getInstance()->isActive()) {
-            // If we're using pulse, the PulseSupport class takes care of things for us.
-            names = GstHelper::extractProperties(audioSink, "device");
-            names.prepend("default");
-        }
+        names = GstHelper::extractProperties(audioSink, "device");
+        names.prepend("default");
 
         /* Determine what factory was used to create the sink, to know what to put in the
          * device access list */
@@ -478,8 +449,6 @@ void DeviceManager::updateDeviceList()
         QByteArray driver; // means sound system
         if (g_strcmp0(factoryName, "alsasink") == 0) {
             driver = "alsa";
-        } else if (g_strcmp0(factoryName, "pulsesink") == 0) {
-            driver = "pulse";
         } else if (g_strcmp0(factoryName, "osssink") == 0) {
             driver = "oss";
         } else if (g_strcmp0(factoryName, "fakesink") == 0) {
