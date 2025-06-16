@@ -25,8 +25,6 @@ DEFINES += MAKE_PHONON_LIB
 
 unix {
     CONFIG += link_pkgconfig
-    PKGCONFIG += libpulse libpulse-mainloop-glib
-    DEFINES += HAVE_PULSEAUDIO
 }
 
 PHONON_NO_DBUS {

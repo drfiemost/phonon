@@ -47,24 +47,6 @@ set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_CURRENT_
 
 # ---------------------------------------------------------------------------- #
 
-macro_optional_find_package(PulseAudio 0.9.15)
-macro_log_feature(PULSEAUDIO_FOUND "PulseAudio" "A cross-platform, networked sound server." "http://www.pulseaudio.org" FALSE "" "Allows audio playback via the PulseAudio soundserver when it is running")
-macro_optional_find_package(GLIB2)
-macro_log_feature(GLIB2_FOUND "GLib2" "GLib 2 is required to compile the pulseaudio for Phonon" "http://www.gtk.org/download/" FALSE)
-
-if (GLIB2_FOUND AND PULSEAUDIO_FOUND)
-   set(PHONON_PULSESUPPORT TRUE CACHE BOOL "Has Phonon pulseaudio support ?")
-   if(PHONON_PULSESUPPORT)
-       add_definitions(-DHAVE_PULSEAUDIO)
-   endif(PHONON_PULSESUPPORT)
-   include_directories(${GLIB2_INCLUDE_DIR} ${PULSEAUDIO_INCLUDE_DIR})
-else(GLIB2_FOUND AND PULSEAUDIO_FOUND)
-   set(PHONON_PULSESUPPORT FALSE CACHE BOOL "Has Phonon pulseaudio support ?")
-   set(PULSEAUDIO_INCLUDE_DIR "")
-   set(PULSEAUDIO_LIBRARY "")
-   set(PULSEAUDIO_MAINLOOP_LIBRARY "")
-endif(GLIB2_FOUND AND PULSEAUDIO_FOUND)
-
 include_directories(${CMAKE_BINARY_DIR}/includes/phonon)
 
 set(phonon_LIB_SRCS
@@ -93,7 +75,6 @@ set(phonon_LIB_SRCS
    path.cpp
    phononnamespace.cpp
    platform.cpp
-   pulsesupport.cpp
    seekslider.cpp
    statesvalidator.cpp
    streaminterface.cpp
@@ -108,12 +89,6 @@ set(phonon_LIB_SRCS
 if(ECM_FOUND)
     ecm_create_qm_loader(phonon_LIB_SRCS libphonon_qt)
 endif()
-
-if (PHONON_PULSESUPPORT)
-   list(APPEND phonon_LIB_SRCS
-      pulsestream.cpp
-   )
-endif (PHONON_PULSESUPPORT)
 
 if (QT_QTDBUS_FOUND AND NOT PHONON_NO_DBUS)
    list(APPEND phonon_LIB_SRCS
@@ -135,10 +110,6 @@ qt5_use_modules(${PHONON_LIB_SONAME} Core Widgets)
 if(QT_QTDBUS_FOUND AND NOT PHONON_NO_DBUS)
     qt5_use_modules(${PHONON_LIB_SONAME} DBus)
 endif(QT_QTDBUS_FOUND AND NOT PHONON_NO_DBUS)
-
-if (PHONON_PULSESUPPORT)
-    target_link_libraries(${PHONON_LIB_SONAME} ${GOBJECT_LIBRARIES} ${PULSEAUDIO_LIBRARY} ${PULSEAUDIO_MAINLOOP_LIBRARY})
-endif (PHONON_PULSESUPPORT)
 
 if(NOT PHONON_NO_GRAPHICSVIEW)
     qt5_use_modules(${PHONON_LIB_SONAME} OpenGL)
@@ -189,7 +160,6 @@ install(FILES
    phonon_export.h
    phonondefs.h
    platformplugin.h
-   pulsesupport.h
    seekslider.h
    streaminterface.h
    videoplayer.h

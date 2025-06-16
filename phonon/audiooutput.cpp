@@ -30,10 +30,6 @@
 #include "phononconfig_p.h"
 #include "phononnamespace_p.h"
 #include "platform_p.h"
-#include "pulsesupport.h"
-#ifdef HAVE_PULSEAUDIO
-#  include "pulsestream_p.h"
-#endif
 
 #include <QtCore/QUuid>
 #include <QtCore/qmath.h>
@@ -52,10 +48,6 @@ namespace Phonon
 
 static inline bool callSetOutputDevice(AudioOutputPrivate *const d, const AudioOutputDevice &dev)
 {
-    PulseSupport *pulse = PulseSupport::getInstance();
-    if (pulse->isActive())
-        return pulse->setOutputDevice(d->getStreamUuid(), dev.index());
-
     if (!d->backendObject())
         return false;
 
@@ -101,24 +93,6 @@ void AudioOutputPrivate::init(Phonon::Category c)
 
     createBackendObject();
 
-#ifdef HAVE_PULSEAUDIO
-    PulseSupport *pulse = PulseSupport::getInstance();
-    if (pulse->isActive()) {
-        PulseStream *stream = pulse->registerOutputStream(streamUuid, category);
-        if (stream) {
-            q->connect(stream, SIGNAL(usingDevice(int)), SLOT(_k_deviceChanged(int)));
-            q->connect(stream, SIGNAL(volumeChanged(qreal)), SLOT(_k_volumeChanged(qreal)));
-            q->connect(stream, SIGNAL(muteChanged(bool)), SLOT(_k_mutedChanged(bool)));
-
-            AudioOutputInterface47 *iface = Iface<AudioOutputInterface47>::cast(this);
-            if (iface)
-                iface->setStreamUuid(streamUuid);
-            else
-                pulse->setupStreamEnvironment(streamUuid);
-        }
-    }
-#endif
-
     q->connect(Factory::sender(), SIGNAL(availableAudioOutputDevicesChanged()), SLOT(_k_deviceListChanged()));
 }
 
@@ -133,7 +107,6 @@ void AudioOutputPrivate::createBackendObject()
         return;
     P_Q(AudioOutput);
     m_backendObject = Factory::createAudioOutput(q);
-    // (cg) Is it possible that PulseAudio initialisation means that the device here is not valid?
     // User reports seem to suggest this possibility but I can't see how :s.
     // See other comment and check for isValid() in handleAutomaticDeviceChange()
     device = AudioOutputDevice::fromIndex(GlobalConfig().audioOutputDeviceFor(category, GlobalConfig::AdvancedDevicesFromSettings | GlobalConfig::HideUnavailableDevices));
@@ -155,11 +128,7 @@ void AudioOutput::setName(const QString &newName)
         return;
     }
     d->name = newName;
-    PulseSupport *pulse = PulseSupport::getInstance();
-    if (pulse->isActive())
-        pulse->setOutputName(d->getStreamUuid(), newName);
-    else
-        setVolume(Platform::loadVolume(newName));
+    setVolume(Platform::loadVolume(newName));
 #ifndef PHONON_NO_DBUS
     if (d->adaptor) {
         emit d->adaptor->nameChanged(newName);
@@ -174,11 +143,8 @@ void AudioOutput::setVolume(qreal volume)
 {
     P_D(AudioOutput);
     d->volume = volume;
-    PulseSupport *pulse = PulseSupport::getInstance();
     if (k_ptr->backendObject()) {
-        if (pulse->isActive()) {
-            pulse->setOutputVolume(d->getStreamUuid(), volume);
-        } else if (!d->muted) {
+        if (!d->muted) {
             // using Stevens' power law loudness is proportional to (sound pressure)^0.67
             // sound pressure is proportional to voltage:
             // p² \prop P \prop V²
@@ -190,14 +156,13 @@ void AudioOutput::setVolume(qreal volume)
     } else {
         emit volumeChanged(volume);
     }
-    if (!pulse->isActive())
-        Platform::saveVolume(d->name, volume);
+    Platform::saveVolume(d->name, volume);
 }
 
 qreal AudioOutput::volume() const
 {
     P_D(const AudioOutput);
-    if (d->muted || !d->m_backendObject || PulseSupport::getInstance()->isActive())
+    if (d->muted || !d->m_backendObject)
         return d->volume;
     return pow(INTERFACE_CALL(volume()), LOUDNESS_TO_VOLTAGE_EXPONENT);
 }
@@ -210,7 +175,7 @@ static const qreal log10over20 = qreal(0.1151292546497022842); // ln(10) / 20
 qreal AudioOutput::volumeDecibel() const
 {
     P_D(const AudioOutput);
-    if (d->muted || !d->m_backendObject || PulseSupport::getInstance()->isActive())
+    if (d->muted || !d->m_backendObject)
         return log(d->volume) / log10over20;
     return 0.67 * log(INTERFACE_CALL(volume())) / log10over20;
 }
@@ -239,23 +204,18 @@ void AudioOutput::setMuted(bool mute)
         return;
     }
 
-    PulseSupport *pulse = PulseSupport::getInstance();
-    if (pulse->isActive()) {
-        pulse->setOutputMute(d->getStreamUuid(), mute);
-    } else {
-        // When interface 9 is implemented we always default to it.
-        Iface<IFACES9> iface9(d);
-        if (iface9) {
-            iface9->setMuted(mute);
-            // iface9 is fully async, we let the backend emit the state change.
-            return;
-        }
+    // When interface 9 is implemented we always default to it.
+    Iface<IFACES9> iface9(d);
+    if (iface9) {
+        iface9->setMuted(mute);
+        // iface9 is fully async, we let the backend emit the state change.
+        return;
+    }
 
-        if (mute) {
-            INTERFACE_CALL(setVolume(0.0));
-        } else {
-            INTERFACE_CALL(setVolume(pow(d->volume, VOLTAGE_TO_LOUDNESS_EXPONENT)));
-        }
+    if (mute) {
+        INTERFACE_CALL(setVolume(0.0));
+    } else {
+        INTERFACE_CALL(setVolume(pow(d->volume, VOLTAGE_TO_LOUDNESS_EXPONENT)));
     }
     emit mutedChanged(mute);
 }
@@ -321,35 +281,33 @@ void AudioOutputPrivate::setupBackendObject()
         iface10->setCategory(category);
     }
 
-    if (!PulseSupport::getInstance()->isActive()) {
-        // set up attributes
-        pINTERFACE_CALL(setVolume(pow(volume, VOLTAGE_TO_LOUDNESS_EXPONENT)));
+    // set up attributes
+    pINTERFACE_CALL(setVolume(pow(volume, VOLTAGE_TO_LOUDNESS_EXPONENT)));
 
 #ifndef QT_NO_PHONON_SETTINGSGROUP
-        // if the output device is not available and the device was not explicitly set
-        // There is no need to set the output device initially if PA is used as
-        // we know it will not work (stream doesn't exist yet) and that this will be
-        // handled by _k_deviceChanged()
-        if (!callSetOutputDevice(this, device) && !outputDeviceOverridden) {
-            // fall back in the preference list of output devices
-            QList<int> deviceList = GlobalConfig().audioOutputDeviceListFor(category, GlobalConfig::AdvancedDevicesFromSettings | GlobalConfig::HideUnavailableDevices);
-            if (deviceList.isEmpty()) {
-                return;
-            }
-            for (int i = 0; i < deviceList.count(); ++i) {
-                const AudioOutputDevice &dev = AudioOutputDevice::fromIndex(deviceList.at(i));
-                if (callSetOutputDevice(this, dev)) {
-                    handleAutomaticDeviceChange(dev, AudioOutputPrivate::FallbackChange);
-                    return; // found one that works
-                }
-            }
-            // if we get here there is no working output device. Tell the backend.
-            const AudioOutputDevice none;
-            callSetOutputDevice(this, none);
-            handleAutomaticDeviceChange(none, FallbackChange);
+    // if the output device is not available and the device was not explicitly set
+    // There is no need to set the output device initially if PA is used as
+    // we know it will not work (stream doesn't exist yet) and that this will be
+    // handled by _k_deviceChanged()
+    if (!callSetOutputDevice(this, device) && !outputDeviceOverridden) {
+        // fall back in the preference list of output devices
+        QList<int> deviceList = GlobalConfig().audioOutputDeviceListFor(category, GlobalConfig::AdvancedDevicesFromSettings | GlobalConfig::HideUnavailableDevices);
+        if (deviceList.isEmpty()) {
+            return;
         }
-#endif //QT_NO_PHONON_SETTINGSGROUP
+        for (int i = 0; i < deviceList.count(); ++i) {
+            const AudioOutputDevice &dev = AudioOutputDevice::fromIndex(deviceList.at(i));
+            if (callSetOutputDevice(this, dev)) {
+                handleAutomaticDeviceChange(dev, AudioOutputPrivate::FallbackChange);
+                return; // found one that works
+            }
+        }
+        // if we get here there is no working output device. Tell the backend.
+        const AudioOutputDevice none;
+        callSetOutputDevice(this, none);
+        handleAutomaticDeviceChange(none, FallbackChange);
     }
+#endif //QT_NO_PHONON_SETTINGSGROUP
 }
 
 void AudioOutputPrivate::_k_volumeChanged(qreal newVolume)
@@ -384,9 +342,6 @@ void AudioOutputPrivate::_k_revertFallback()
 
 void AudioOutputPrivate::_k_audioDeviceFailed()
 {
-    if (PulseSupport::getInstance()->isActive())
-        return;
-
 #ifndef QT_NO_PHONON_SETTINGSGROUP
 
     pDebug() << Q_FUNC_INFO;
@@ -413,9 +368,6 @@ void AudioOutputPrivate::_k_audioDeviceFailed()
 
 void AudioOutputPrivate::_k_deviceListChanged()
 {
-    if (PulseSupport::getInstance()->isActive())
-        return;
-
 #ifndef QT_NO_PHONON_SETTINGSGROUP
     pDebug() << Q_FUNC_INFO;
     // Check to see if we have an override and do not change to a higher priority device if the overridden device is still present.
@@ -452,7 +404,7 @@ void AudioOutputPrivate::_k_deviceListChanged()
 
 void AudioOutputPrivate::_k_deviceChanged(int deviceIndex)
 {
-    // NB that this method is only used by PulseAudio at present.
+    // NB that this method is unused at present.
 
     // 1. Check to see if we are overridden. If we are, and devices do not match,
     //    then try and apply our own device as the output device.
@@ -554,10 +506,6 @@ void AudioOutputPrivate::handleAutomaticDeviceChange(const AudioOutputDevice &de
 
 AudioOutputPrivate::~AudioOutputPrivate()
 {
-    PulseSupport *pulse = PulseSupport::getInstanceOrNull(true);
-    if (pulse) {
-        pulse->clearStreamCache(streamUuid);
-    }
 #ifndef PHONON_NO_DBUS
     if (adaptor) {
         emit adaptor->outputDestroyed();
