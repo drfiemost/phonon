@@ -267,12 +267,8 @@ QDebug operator<<(QDebug dbg, const ObjectDescription<T> &d)
 {
     dbg.nospace() << "\n{\n";
     dbg.nospace() << "  index: " << d.index() << "\n";
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     const QList<QByteArray> propertyNames = d.propertyNames();
     for (const QByteArray &propertyName : propertyNames) {
-#else
-    Q_FOREACH (const QByteArray &propertyName, d.propertyNames()) {
-#endif
         dbg.nospace() << "  " << propertyName << ": " <<
                          d.property(propertyName).toString() << "\n";
     }
@@ -284,12 +280,12 @@ QDebug operator<<(QDebug dbg, const ObjectDescription<T> &d)
 /**
  * \ingroup BackendInformation
  */
-typedef ObjectDescription<AudioOutputDeviceType> AudioOutputDevice;
+using AudioOutputDevice = ObjectDescription<AudioOutputDeviceType>;
 /**
  * \ingroup BackendInformation
  */
 #ifndef PHONON_NO_AUDIOCAPTURE
-typedef ObjectDescription<AudioCaptureDeviceType> AudioCaptureDevice;
+using AudioCaptureDevice = ObjectDescription<AudioCaptureDeviceType>;
 #endif //PHONON_NO_AUDIOCAPTURE
 /**
  * \ingroup BackendInformation
@@ -299,13 +295,13 @@ typedef ObjectDescription<AudioCaptureDeviceType> AudioCaptureDevice;
  * \ingroup BackendInformation
  */
 #ifndef PHONON_NO_VIDEOCAPTURE
-typedef ObjectDescription<VideoCaptureDeviceType> VideoCaptureDevice;
+using VideoCaptureDevice = ObjectDescription<VideoCaptureDeviceType>;
 #endif
 /**
  * \ingroup BackendInformation
  */
 #ifndef QT_NO_PHONON_EFFECT
-typedef ObjectDescription<EffectType> EffectDescription;
+using EffectDescription = ObjectDescription<EffectType>;
 #endif //QT_NO_PHONON_EFFECT
 
 /**
@@ -325,8 +321,8 @@ typedef ObjectDescription<EffectType> EffectDescription;
  */
 //typedef ObjectDescription<VisualizationType> VisualizationDescription;
 #ifndef QT_NO_PHONON_MEDIACONTROLLER
-typedef ObjectDescription<AudioChannelType> AudioChannelDescription;
-typedef ObjectDescription<SubtitleType> SubtitleDescription;
+using AudioChannelDescription = ObjectDescription<AudioChannelType>;
+using SubtitleDescription = ObjectDescription<SubtitleType>;
 #endif //QT_NO_PHONON_MEDIACONTROLLER
 
 /**
@@ -339,7 +335,7 @@ typedef ObjectDescription<SubtitleType> SubtitleDescription;
  *
  * \see DeviceAccessList
  */
-typedef QPair<QByteArray, QString> DeviceAccess;
+using DeviceAccess = QPair<QByteArray, QString>;
 
 /**
  * \short Information about methods for accessing a device
@@ -355,7 +351,7 @@ typedef QPair<QByteArray, QString> DeviceAccess;
  * \see DeviceAccess
  * \see AudioCaptureDevice
  */
-typedef QList<DeviceAccess> DeviceAccessList;
+using DeviceAccessList = QList<DeviceAccess>;
 
 PHONON_EXPORT_DEPRECATED void registerMetaTypes();
 
