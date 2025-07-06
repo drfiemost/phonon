@@ -361,12 +361,12 @@ and existing builds. */
             ObjectDescriptionModelData *const d;
     };
 
-    typedef ObjectDescriptionModel<AudioOutputDeviceType> AudioOutputDeviceModel;
-    typedef ObjectDescriptionModel<AudioCaptureDeviceType> AudioCaptureDeviceModel;
-    typedef ObjectDescriptionModel<VideoCaptureDeviceType> VideoCaptureDeviceModel;
-    typedef ObjectDescriptionModel<EffectType> EffectDescriptionModel;
-    typedef ObjectDescriptionModel<AudioChannelType> AudioChannelDescriptionModel;
-    typedef ObjectDescriptionModel<SubtitleType> SubtitleDescriptionModel;
+    using AudioOutputDeviceModel = ObjectDescriptionModel<AudioOutputDeviceType>;
+    using AudioCaptureDeviceModel = ObjectDescriptionModel<AudioCaptureDeviceType>;
+    using VideoCaptureDeviceModel = ObjectDescriptionModel<VideoCaptureDeviceType>;
+    using EffectDescriptionModel = ObjectDescriptionModel<EffectType>;
+    using AudioChannelDescriptionModel = ObjectDescriptionModel<AudioChannelType>;
+    using SubtitleDescriptionModel = ObjectDescriptionModel<SubtitleType>;
 /*
     typedef ObjectDescriptionModel<VideoOutputDeviceType> VideoOutputDeviceModel;
     typedef ObjectDescriptionModel<AudioCodecType> AudioCodecDescriptionModel;
