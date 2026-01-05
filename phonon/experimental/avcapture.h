@@ -127,8 +127,6 @@ namespace Experimental
              */
             void setAudioCaptureDevice(Phonon::CaptureCategory category);
 
-            PHONON_DEPRECATED void setAudioCaptureDevice(Phonon::Category category);
-
             /**
              * Sets the video capture source to use.
              *
@@ -146,14 +144,6 @@ namespace Experimental
              * @param category Capture category to use for getting a device
              */
             void setVideoCaptureDevice(Phonon::CaptureCategory category);
-
-            PHONON_DEPRECATED void setVideoCaptureDevice(Phonon::Category category);
-
-            /**
-             * @deprecated since 4.4.3, use
-             * setVideoCaptureDevice(const Phonon::VideoCaptureDevice &source) instead
-             */
-            PHONON_DEPRECATED void setVideoCaptureDevice(const Phonon::Experimental::VideoCaptureDevice &source);
 
         public Q_SLOTS:
             /**

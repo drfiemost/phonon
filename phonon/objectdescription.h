@@ -353,8 +353,6 @@ using DeviceAccess = QPair<QByteArray, QString>;
  */
 using DeviceAccessList = QList<DeviceAccess>;
 
-PHONON_EXPORT_DEPRECATED void registerMetaTypes();
-
 } //namespace Phonon
 
 Q_DECLARE_METATYPE(Phonon::AudioOutputDevice)

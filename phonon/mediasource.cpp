@@ -119,12 +119,6 @@ MediaSource::MediaSource(DiscType dt, const QString &deviceName)
     d->deviceName = deviceName;
 }
 
-// NOTE: this is deprecated
-MediaSource::MediaSource(const DeviceAccess &)
-    : d(new MediaSourcePrivate(Invalid))
-{
-}
-
 #ifndef PHONON_NO_AUDIOCAPTURE
 MediaSource::MediaSource(const AudioCaptureDevice& device)
     : d(new MediaSourcePrivate(CaptureDevice))

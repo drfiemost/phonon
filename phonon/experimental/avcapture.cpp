@@ -116,11 +116,6 @@ void AvCapture::setAudioCaptureDevice(Phonon::CaptureCategory category)
     }
 }
 
-PHONON_DEPRECATED void AvCapture::setAudioCaptureDevice(Phonon::Category category)
-{
-    setAudioCaptureDevice(Phonon::categoryToCaptureCategory(category));
-}
-
 Phonon::VideoCaptureDevice AvCapture::videoCaptureDevice() const
 {
     P_D(const AvCapture);
@@ -128,11 +123,6 @@ Phonon::VideoCaptureDevice AvCapture::videoCaptureDevice() const
         return INTERFACE_CALL(videoCaptureDevice());
     }
     return d->videoCaptureDevice;
-}
-
-void AvCapture::setVideoCaptureDevice(const Phonon::Experimental::VideoCaptureDevice &videoCaptureDevice)
-{
-    setVideoCaptureDevice(phononExperimentalVcdToVcd(videoCaptureDevice));
 }
 
 void AvCapture::setVideoCaptureDevice(const Phonon::VideoCaptureDevice &videoCaptureDevice)
@@ -151,11 +141,6 @@ void AvCapture::setVideoCaptureDevice(Phonon::CaptureCategory category)
     if (d->m_backendObject) {
         INTERFACE_CALL(setVideoCaptureDevice(d->videoCaptureDevice));
     }
-}
-
-void AvCapture::setVideoCaptureDevice(Phonon::Category category)
-{
-    setVideoCaptureDevice(Phonon::categoryToCaptureCategory(category));
 }
 
 bool AvCapturePrivate::aboutToDeleteBackendObject()

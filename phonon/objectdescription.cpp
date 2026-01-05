@@ -101,7 +101,7 @@ QList<QByteArray> ObjectDescriptionData::propertyNames() const
 
 bool ObjectDescriptionData::isValid() const
 {
-    return d != 0;
+    return d != nullptr;
 }
 
 ObjectDescriptionData *ObjectDescriptionData::fromIndex(ObjectDescriptionType type, int index)
@@ -131,11 +131,5 @@ ObjectDescriptionData *ObjectDescriptionData::fromIndex(ObjectDescriptionType ty
 }
 
 } //namespace Phonon
-
-
-void Phonon::registerMetaTypes()
-{
-    // Deprecated, does nothing
-}
 
 // vim: sw=4 ts=4
